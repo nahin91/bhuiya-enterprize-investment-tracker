@@ -77,11 +77,16 @@ function App() {
 
     getInvestmentMap();
   }, []);
-  // console.log('sideEffect: ', investmentMap)
+
+  useEffect(() => {
+    setShipments(investmentMap[investmentSelection]?.shipments);
+  }, [investmentSelection]);
 
   useEffect(() => {
     const subTotal = shipments?.reduce(
-      (accumulator, currentItem) => accumulator + currentItem.incentive,
+      (accumulator, currentItem) => {
+        console.log('acc: ', accumulator)
+        return accumulator + currentItem.incentive},
       0
     );
     setTotalPayable(subTotal);
@@ -104,7 +109,7 @@ function App() {
     const { name, value } = e.target;
     setFormValues({
       ...formValues,
-      [name]: value,
+      [name]: Number(value),
     });
   };
 
@@ -131,10 +136,6 @@ function App() {
       shipments: shipments,
     });
   };
-
-  useEffect(() => {
-    setShipments(investmentMap[investmentSelection]?.shipments);
-  }, [investmentSelection]);
 
   const table = shipments ? (
     <TableContainer component={Paper}>
@@ -263,7 +264,7 @@ function App() {
             p={1}
           >
             <Typography variant="h5">Total Payable</Typography>
-            {/* <Typography variant="h5">{totalPayable || 0} ৳</Typography> */}
+            <Typography variant="h5">{totalPayable || 0} ৳</Typography>
           </Box>
 
           <Box overflow="auto">{table}</Box>
