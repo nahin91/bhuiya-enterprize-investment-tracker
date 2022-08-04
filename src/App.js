@@ -27,17 +27,15 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import moment from "moment";
 
+import SHIPMENT_DATA from "./shipment_data";
+import {
+  addCollectionAndDocuments,
+  getInvestmentAndDocuments,
+} from "./firebase";
+
 function createData(name, calories, fat, carbs, protein) {
   return { name, calories, fat, carbs, protein };
 }
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
 
 const current = new Date();
 const currentDate = `${
@@ -51,11 +49,11 @@ const defaultShipmentFields = {
 };
 
 function App() {
-
   const [formValues, setFormValues] = useState(defaultShipmentFields);
   const [date, setDate] = useState(currentDate);
-  const [shipments, setShipments] = useState([]);
+  const [shipments, setShipments] = useState(SHIPMENT_DATA);
   const [investment, setInvestment] = useState("");
+  const [investmentMap, setInvestmentMap] = useState({});
   const [toast, setToast] = useState({
     open: false,
     vertical: "top",
@@ -63,6 +61,20 @@ function App() {
   });
 
   const { vertical, horizontal, open } = toast;
+
+  // useEffect(() => {
+  //   addCollectionAndDocuments("investmentMap", SHIPMENT_DATA);
+  // }, []);
+
+  useEffect(() => {
+    const getInvestmentMap = async () => {
+      const investmentMap = await getInvestmentAndDocuments();
+      console.log("fetched data: ", investmentMap);
+      setInvestmentMap(investmentMap);
+    };
+
+    getInvestmentMap();
+  }, []);
 
   const handleClick = (newState) => () => {
     setToast({ open: true, ...newState });
@@ -75,11 +87,6 @@ function App() {
   const handleChange = (event) => {
     setInvestment(event.target.value);
   };
-
-  useEffect(() => {
-    console.log("sideEffect FormVal", formValues);
-    console.log("sideEffect Shipment", shipments);
-  }, [formValues, shipments]);
 
   const inputChangeHandler = (e) => {
     const { name, value } = e.target;
@@ -121,19 +128,21 @@ function App() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {shipments.map((shipment, idx) => (
-            <TableRow
-              key={idx}
-              // sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-            >
-              <TableCell component="th" scope="shipment">
-                {idx + 1}
-              </TableCell>
-              <TableCell align="center">{shipment.date}</TableCell>
-              <TableCell align="center">{shipment.profit}</TableCell>
-              <TableCell align="center">{shipment.incentive}</TableCell>
-            </TableRow>
-          ))}
+          {shipments.map((item) =>
+            item.shipments.map((shipment, idx) => (
+              <TableRow
+                key={idx}
+                // sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell component="th" scope="shipment">
+                  {idx + 1}
+                </TableCell>
+                <TableCell align="center">{shipment.date}</TableCell>
+                <TableCell align="center">{shipment.profit}</TableCell>
+                <TableCell align="center">{shipment.incentive}</TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </TableContainer>
@@ -160,8 +169,9 @@ function App() {
                     label="Investment"
                     onChange={handleChange}
                   >
-                    <MenuItem value={4}>Italy (400k ৳)</MenuItem>
-                    <MenuItem value={2}>Jeddah (200k ৳)</MenuItem>
+                    {investmentMap.map(item =>( <MenuItem value={4}>{item.key}</MenuItem> ))}
+                    {/* <MenuItem value={4}>Italy (400k ৳)</MenuItem>
+                    <MenuItem value={2}>Jeddah (200k ৳)</MenuItem> */}
                   </Select>
                 </FormControl>
               </Box>
