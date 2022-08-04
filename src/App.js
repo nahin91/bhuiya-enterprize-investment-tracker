@@ -31,6 +31,7 @@ import SHIPMENT_DATA from "./shipment_data";
 import {
   addCollectionAndDocuments,
   getInvestmentAndDocuments,
+  addShipmentInfo,
 } from "./firebase";
 
 function createData(name, calories, fat, carbs, protein) {
@@ -53,8 +54,8 @@ function App() {
   const [date, setDate] = useState(currentDate);
   const [shipments, setShipments] = useState([]);
   const [investmentSelection, setInvestmentSelection] = useState("");
-
   const [investmentMap, setInvestmentMap] = useState({});
+  const [totalPayable, setTotalPayable] = useState(0);
   const [toast, setToast] = useState({
     open: false,
     vertical: "top",
@@ -71,17 +72,19 @@ function App() {
     const getInvestmentMap = async () => {
       const fetchedInvestmentMap = await getInvestmentAndDocuments();
       setInvestmentMap(fetchedInvestmentMap);
+      setInvestmentSelection(Object.keys(fetchedInvestmentMap)[0]);
     };
 
     getInvestmentMap();
   }, []);
+  // console.log('sideEffect: ', investmentMap)
 
   useEffect(() => {
-    setShipments(investmentMap[investmentSelection]);
-  }, [investmentSelection]);
-
-  useEffect(() => {
-    console.log("shipment check: ", shipments);
+    const subTotal = shipments?.reduce(
+      (accumulator, currentItem) => accumulator + currentItem.incentive,
+      0
+    );
+    setTotalPayable(subTotal);
   }, [shipments]);
 
   const handleClick = (newState) => () => {
@@ -123,9 +126,17 @@ function App() {
       horizontal: "right",
     });
     console.log("inside submit: ", shipments);
+    addShipmentInfo(investmentSelection, {
+      ...investmentMap[investmentSelection],
+      shipments: shipments,
+    });
   };
 
-  const table = (
+  useEffect(() => {
+    setShipments(investmentMap[investmentSelection]?.shipments);
+  }, [investmentSelection]);
+
+  const table = shipments ? (
     <TableContainer component={Paper}>
       <Table sx={{}} size="small" aria-label="a dense table">
         <TableHead>
@@ -137,11 +148,8 @@ function App() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {shipments?.map((shipment, idx) => (
-            <TableRow
-              key={idx}
-              // sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-            >
+          {shipments.map((shipment, idx) => (
+            <TableRow key={idx}>
               <TableCell component="th" scope="shipment">
                 {idx + 1}
               </TableCell>
@@ -153,6 +161,11 @@ function App() {
         </TableBody>
       </Table>
     </TableContainer>
+  ) : (
+    <Typography variant="body1" sx={{ color: "gray" }}>
+      {" "}
+      select investment for shipment informations!{" "}
+    </Typography>
   );
 
   return (
@@ -241,6 +254,16 @@ function App() {
                 />
               </Box>
             </form>
+          </Box>
+
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            bgcolor="#ffa95e"
+            p={1}
+          >
+            <Typography variant="h5">Total Payable</Typography>
+            {/* <Typography variant="h5">{totalPayable || 0} ৳</Typography> */}
           </Box>
 
           <Box overflow="auto">{table}</Box>

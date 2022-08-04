@@ -9,6 +9,8 @@ import {
   writeBatch,
   query,
   getDocs,
+  addDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 // Your web app's Firebase configuration
@@ -43,6 +45,25 @@ export const addCollectionAndDocuments = async (
   console.log("done");
 };
 
+export const addShipmentInfo = async (collectionKey, shipmentInfo) => {
+  try{
+    await setDoc(doc(db, 'Investment', collectionKey), shipmentInfo);
+    
+  } catch (error){console.log('error has occured while adding shipment information! error: ', error)}
+  // await getFirestore.collection(collectionKey).add({
+  //   id: 404,
+  //   date: '01/01/2022',
+  //   profit: 1250,
+  //   incentive: 15000
+  // })
+  // await addDoc(collection(db, collectionKey), {
+  //   id: 404,
+  //   date: '01/01/2022',
+  //   profit: 1250,
+  //   incentive: 15000
+  // });
+};
+
 // fetching data from firebase DB
 export const getInvestmentAndDocuments = async () => {
   const investmentRef = collection(db, "Investment");
@@ -51,7 +72,10 @@ export const getInvestmentAndDocuments = async () => {
   const querySnapshot = await getDocs(q);
   const investmentMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
     const { title, shipments } = docSnapshot.data();
-    acc[title.toLowerCase()] = shipments;
+    acc[title.toLowerCase()] = {
+      title: title,
+      shipments: shipments
+    }
     return acc;
   }, {});
 
