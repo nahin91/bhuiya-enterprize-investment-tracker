@@ -51,8 +51,9 @@ const defaultShipmentFields = {
 function App() {
   const [formValues, setFormValues] = useState(defaultShipmentFields);
   const [date, setDate] = useState(currentDate);
-  const [shipments, setShipments] = useState(SHIPMENT_DATA);
-  const [investment, setInvestment] = useState("");
+  const [shipments, setShipments] = useState([]);
+  const [investmentSelection, setInvestmentSelection] = useState("");
+
   const [investmentMap, setInvestmentMap] = useState({});
   const [toast, setToast] = useState({
     open: false,
@@ -68,13 +69,20 @@ function App() {
 
   useEffect(() => {
     const getInvestmentMap = async () => {
-      const investmentMap = await getInvestmentAndDocuments();
-      console.log("fetched data: ", investmentMap);
-      setInvestmentMap(investmentMap);
+      const fetchedInvestmentMap = await getInvestmentAndDocuments();
+      setInvestmentMap(fetchedInvestmentMap);
     };
 
     getInvestmentMap();
   }, []);
+
+  useEffect(() => {
+    setShipments(investmentMap[investmentSelection]);
+  }, [investmentSelection]);
+
+  useEffect(() => {
+    console.log("shipment check: ", shipments);
+  }, [shipments]);
 
   const handleClick = (newState) => () => {
     setToast({ open: true, ...newState });
@@ -85,7 +93,8 @@ function App() {
   };
 
   const handleChange = (event) => {
-    setInvestment(event.target.value);
+    console.log("handleChange: ", event.target.value);
+    setInvestmentSelection(event.target.value);
   };
 
   const inputChangeHandler = (e) => {
@@ -128,21 +137,19 @@ function App() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {shipments.map((item) =>
-            item.shipments.map((shipment, idx) => (
-              <TableRow
-                key={idx}
-                // sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="shipment">
-                  {idx + 1}
-                </TableCell>
-                <TableCell align="center">{shipment.date}</TableCell>
-                <TableCell align="center">{shipment.profit}</TableCell>
-                <TableCell align="center">{shipment.incentive}</TableCell>
-              </TableRow>
-            ))
-          )}
+          {shipments?.map((shipment, idx) => (
+            <TableRow
+              key={idx}
+              // sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+            >
+              <TableCell component="th" scope="shipment">
+                {idx + 1}
+              </TableCell>
+              <TableCell align="center">{shipment.date}</TableCell>
+              <TableCell align="center">{shipment.profit}</TableCell>
+              <TableCell align="center">{shipment.incentive}</TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </TableContainer>
@@ -165,13 +172,15 @@ function App() {
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={investment}
+                    value={investmentSelection}
                     label="Investment"
                     onChange={handleChange}
                   >
-                    {investmentMap.map(item =>( <MenuItem value={4}>{item.key}</MenuItem> ))}
-                    {/* <MenuItem value={4}>Italy (400k ৳)</MenuItem>
-                    <MenuItem value={2}>Jeddah (200k ৳)</MenuItem> */}
+                    {Object.keys(investmentMap).map((item) => (
+                      <MenuItem key={item} value={item}>
+                        {item}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Box>
@@ -234,17 +243,7 @@ function App() {
             </form>
           </Box>
 
-          <Box>{table}</Box>
-
-          {/* <Box>
-            {shipments.map((shipment, index) => (
-              <Box key={index}>
-                <Typography>date: {shipment.date}</Typography>
-                <Typography>profit: {shipment.profit}</Typography>
-                <Typography>incentive: {shipment.incentive}</Typography>
-              </Box>
-            ))}
-          </Box> */}
+          <Box overflow="auto">{table}</Box>
         </Box>
       </Container>
     </Fragment>
