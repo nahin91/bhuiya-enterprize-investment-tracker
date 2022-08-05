@@ -24,12 +24,9 @@ import {
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import moment from "moment";
 
-import SHIPMENT_DATA from "./shipment_data";
 import {
-  addCollectionAndDocuments,
   getInvestmentAndDocuments,
   addShipmentInfo,
 } from "./firebase";

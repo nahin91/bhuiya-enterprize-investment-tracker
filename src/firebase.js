@@ -3,14 +3,11 @@ import { initializeApp } from "firebase/app";
 import {
   getFirestore,
   doc,
-  getDoc,
   setDoc,
   collection,
   writeBatch,
   query,
   getDocs,
-  addDoc,
-  updateDoc,
 } from "firebase/firestore";
 
 // Your web app's Firebase configuration
@@ -50,18 +47,6 @@ export const addShipmentInfo = async (collectionKey, shipmentInfo) => {
     await setDoc(doc(db, 'Investment', collectionKey), shipmentInfo);
     
   } catch (error){console.log('error has occured while adding shipment information! error: ', error)}
-  // await getFirestore.collection(collectionKey).add({
-  //   id: 404,
-  //   date: '01/01/2022',
-  //   profit: 1250,
-  //   incentive: 15000
-  // })
-  // await addDoc(collection(db, collectionKey), {
-  //   id: 404,
-  //   date: '01/01/2022',
-  //   profit: 1250,
-  //   incentive: 15000
-  // });
 };
 
 // fetching data from firebase DB
