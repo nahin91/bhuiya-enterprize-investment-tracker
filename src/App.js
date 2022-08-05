@@ -20,16 +20,15 @@ import {
   Select,
   MenuItem,
   Snackbar,
+  Fab,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import moment from "moment";
 
-import {
-  getInvestmentAndDocuments,
-  addShipmentInfo,
-} from "./firebase";
+import { getInvestmentAndDocuments, addShipmentInfo } from "./firebase";
 
 function createData(name, calories, fat, carbs, protein) {
   return { name, calories, fat, carbs, protein };
@@ -53,6 +52,7 @@ function App() {
   const [investmentSelection, setInvestmentSelection] = useState("");
   const [investmentMap, setInvestmentMap] = useState({});
   const [totalPayable, setTotalPayable] = useState(0);
+  const [isDisabled, setIsDisabled] = useState(true);
   const [toast, setToast] = useState({
     open: false,
     vertical: "top",
@@ -163,95 +163,109 @@ function App() {
       <Container maxWidth="sm">
         <Box display="flex" flexDirection="column" gap={3} height="100vh">
           <Box>
-            <Box display="flex" justifyContent="center" m={2.5}>
+            <Box display="flex" justifyContent="space-between" m={2.5}>
               <Typography variant="h5">Bhuiya Enterprise Investment</Typography>
+              <Fab
+                size="small"
+                color="primary"
+                aria-label="edit"
+                onClick={() => setIsDisabled(false)}
+              >
+                <EditIcon />
+              </Fab>
             </Box>
-            <form onSubmit={handleSubmit}>
-              <Box sx={{ minWidth: 120 }}>
-                <FormControl fullWidth>
-                  <InputLabel id="demo-simple-select-label">
-                    Investment
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    value={investmentSelection}
-                    label="Investment"
-                    onChange={handleChange}
+            <Box disabled>
+              <form onSubmit={handleSubmit}>
+                <Box sx={{ minWidth: 120 }}>
+                  <FormControl fullWidth disabled={isDisabled}>
+                    <InputLabel id="demo-simple-select-label">
+                      Investment
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      value={investmentSelection}
+                      label="Investment"
+                      onChange={handleChange}
+                    >
+                      {Object.keys(investmentMap).map((item) => (
+                        <MenuItem key={item} value={item}>
+                          {item}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+                <Box display="flex" flexDirection="column" gap={2} mt={3}>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      disabled={isDisabled}
+                      label="Shipment Date"
+                      value={date}
+                      maxDate={current}
+                      inputFormat="MM/dd/yyyy"
+                      onChange={dateChangeHandler}
+                      renderInput={(params) => (
+                        <TextField {...params} required />
+                      )}
+                    />
+                  </LocalizationProvider>
+
+                  {/* profit */}
+                  <FormControl fullWidth disabled={isDisabled}>
+                    <InputLabel htmlFor="profit">Profit</InputLabel>
+                    <OutlinedInput
+                      id="profit"
+                      name="profit"
+                      type="number"
+                      value={formValues.profit}
+                      onChange={inputChangeHandler}
+                      startAdornment={
+                        <InputAdornment position="start">৳</InputAdornment>
+                      }
+                      label="Amount"
+                    />
+                  </FormControl>
+
+                  {/* incentive */}
+                  <FormControl fullWidth disabled={isDisabled}>
+                    <InputLabel htmlFor="incentive">Incentive</InputLabel>
+                    <OutlinedInput
+                      required
+                      id="incentive"
+                      name="incentive"
+                      type="number"
+                      value={formValues.incentive}
+                      onChange={inputChangeHandler}
+                      startAdornment={
+                        <InputAdornment position="start">৳</InputAdornment>
+                      }
+                      label="Amount"
+                    />
+                  </FormControl>
+
+                  <Button
+                    disabled={isDisabled}
+                    variant="contained"
+                    color="primary"
+                    type="submit"
+                    onClick={handleClick({
+                      vertical: "top",
+                      horizontal: "right",
+                    })}
                   >
-                    {Object.keys(investmentMap).map((item) => (
-                      <MenuItem key={item} value={item}>
-                        {item}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-              <Box display="flex" flexDirection="column" gap={2} mt={3}>
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <DatePicker
-                    label="Shipment Date"
-                    value={date}
-                    maxDate={current}
-                    inputFormat="MM/dd/yyyy"
-                    onChange={dateChangeHandler}
-                    renderInput={(params) => <TextField {...params} required />}
+                    Update
+                  </Button>
+                  <Snackbar
+                    anchorOrigin={{ vertical, horizontal }}
+                    open={open}
+                    onClose={handleCloseSnack}
+                    message="successfully updated!"
+                    key={vertical + horizontal}
                   />
-                </LocalizationProvider>
-
-                {/* profit */}
-                <FormControl fullWidth>
-                  <InputLabel htmlFor="profit">Profit</InputLabel>
-                  <OutlinedInput
-                    id="profit"
-                    name="profit"
-                    type="number"
-                    value={formValues.profit}
-                    onChange={inputChangeHandler}
-                    startAdornment={
-                      <InputAdornment position="start">৳</InputAdornment>
-                    }
-                    label="Amount"
-                  />
-                </FormControl>
-
-                {/* incentive */}
-                <FormControl fullWidth>
-                  <InputLabel htmlFor="incentive">Incentive</InputLabel>
-                  <OutlinedInput
-                    required
-                    id="incentive"
-                    name="incentive"
-                    type="number"
-                    value={formValues.incentive}
-                    onChange={inputChangeHandler}
-                    startAdornment={
-                      <InputAdornment position="start">৳</InputAdornment>
-                    }
-                    label="Amount"
-                  />
-                </FormControl>
-
-                <Button
-                  variant="contained"
-                  color="primary"
-                  type="submit"
-                  onClick={handleClick({
-                    vertical: "top",
-                    horizontal: "right",
-                  })}
-                >
-                  Update
-                </Button>
-                <Snackbar
-                  anchorOrigin={{ vertical, horizontal }}
-                  open={open}
-                  onClose={handleCloseSnack}
-                  message="successfully updated!"
-                  key={vertical + horizontal}
-                />
-              </Box>
-            </form>
+                </Box>
+              </form>
+            </Box>
           </Box>
 
           <Box
