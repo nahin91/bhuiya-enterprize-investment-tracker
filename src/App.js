@@ -83,12 +83,13 @@ function App() {
   }, [investmentSelection]);
 
   useEffect(() => {
-    const subTotal = shipments?.reduce(
-      (accumulator, currentItem) => {
-        console.log('acc: ', accumulator)
-        return accumulator + currentItem.incentive},
-      0
-    );
+    addShipmentInfo(investmentSelection, {
+      ...investmentMap[investmentSelection],
+      shipments: shipments,
+    });
+    const subTotal = shipments?.reduce((accumulator, currentItem) => {
+      return accumulator + currentItem.incentive;
+    }, 0);
     setTotalPayable(subTotal);
   }, [shipments]);
 
@@ -126,15 +127,6 @@ function App() {
   const handleSubmit = (event) => {
     event.preventDefault();
     setShipments([...shipments, formValues]);
-    handleClick({
-      vertical: "top",
-      horizontal: "right",
-    });
-    console.log("inside submit: ", shipments);
-    addShipmentInfo(investmentSelection, {
-      ...investmentMap[investmentSelection],
-      shipments: shipments,
-    });
   };
 
   const table = shipments ? (
@@ -243,7 +235,15 @@ function App() {
                   />
                 </FormControl>
 
-                <Button variant="contained" color="primary" type="submit">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  type="submit"
+                  onClick={handleClick({
+                    vertical: "top",
+                    horizontal: "right",
+                  })}
+                >
                   Update
                 </Button>
                 <Snackbar
